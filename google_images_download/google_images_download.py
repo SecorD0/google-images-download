@@ -226,8 +226,6 @@ class googleimagesdownload:
                 resp = urllib.request.urlopen(req)
                 respData = str(resp.read())
             except:
-                print("Could not open URL. Please check your internet connection and/or ssl settings \n"
-                      "If you are using proxy, make sure your proxy settings is configured correctly")
                 sys.exit()
         else:  # If the Current Version of Python is 2.x
             try:
@@ -239,8 +237,6 @@ class googleimagesdownload:
                     response = urlopen(req, context=context)
                 respData = response.read()
             except:
-                print("Could not open URL. Please check your internet connection and/or ssl settings \n"
-                      "If you are using proxy, make sure your proxy settings is configured correctly")
                 sys.exit()
                 return "Page Not found"
         try:
