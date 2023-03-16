@@ -43,7 +43,8 @@ args_list = ["keywords", "keywords_from_file", "prefix_keywords", "suffix_keywor
              "exact_size", "aspect_ratio", "type", "time", "time_range", "delay", "url", "single_image",
              "output_directory", "image_directory", "no_directory", "proxy", "similar_images", "specific_site",
              "print_urls", "print_size", "print_paths", "metadata", "extract_metadata", "socket_timeout",
-             "thumbnail", "thumbnail_only", "language", "prefix", "chromedriver", "browser", "related_images", "safe_search",
+             "thumbnail", "thumbnail_only", "language", "prefix", "chromedriver", "browser", "related_images",
+             "safe_search",
              "no_numbering",
              "offset", "no_download", "save_source", "silent_mode", "ignore_urls"]
 
@@ -185,14 +186,14 @@ class googleimagesdownload:
     def _extract_data_pack(self, page):
         start_line = page.find("AF_initDataCallback({key: \\'ds:1\\'") - 10
         start_object = page.find('[', start_line + 1)
-        end_object = page.rfind(']',0,page.find('</script>', start_object + 1))+1
+        end_object = page.rfind(']', 0, page.find('</script>', start_object + 1)) + 1
         object_raw = str(page[start_object:end_object])
         return bytes(object_raw, "utf-8").decode("unicode_escape")
 
     def _extract_data_pack_extended(self, page):
         start_line = page.find("AF_initDataCallback({key: 'ds:1'") - 10
         start_object = page.find('[', start_line + 1)
-        end_object = page.rfind(']',0,page.find('</script>', start_object + 1)) + 1
+        end_object = page.rfind(']', 0, page.find('</script>', start_object + 1)) + 1
         return str(page[start_object:end_object])
 
     def _extract_data_pack_ajax(self, data):
@@ -243,7 +244,8 @@ class googleimagesdownload:
             return self._image_objects_from_pack(self._extract_data_pack(respData)), self.get_all_tabs(respData)
         except Exception as e:
             print(e)
-            print('Image objects data unpacking failed. Please leave a comment with the above error at https://github.com/Joeclinton1/google-images-download/pull/26')
+            print(
+                'Image objects data unpacking failed. Please leave a comment with the above error at https://github.com/Joeclinton1/google-images-download/pull/26')
             sys.exit()
 
     # Download Page for more than 100 images
@@ -332,7 +334,7 @@ class googleimagesdownload:
         source = browser.page_source  # page source
         images = self._image_objects_from_pack(self._extract_data_pack_extended(source))
 
-        ajax_data = browser.execute_script("return XMLHttpRequest.prototype._data") # I think this is broken
+        ajax_data = browser.execute_script("return XMLHttpRequest.prototype._data")  # I think this is broken
         for chunk in ajax_data if ajax_data else []:
             images += self._image_objects_from_pack(self._extract_data_pack_ajax(chunk))
 
@@ -407,10 +409,17 @@ class googleimagesdownload:
             formatted_object['image_width'] = main[1]
             formatted_object['image_link'] = main[0]
             formatted_object['image_format'] = main[0][-1 * (len(main[0]) - main[0].rfind(".") - 1):]
-            formatted_object['image_description'] = info['2003'][3]
-            formatted_object['image_host'] = info['2003'][17]
-            formatted_object['image_source'] = info['2003'][2]
             formatted_object['image_thumbnail_url'] = data[2][0]
+            if info:
+                formatted_object['image_description'] = info['2003'][3]
+                formatted_object['image_host'] = info['2003'][17]
+                formatted_object['image_source'] = info['2003'][2]
+
+            else:
+                formatted_object['image_description'] = None
+                formatted_object['image_host'] = None
+                formatted_object['image_source'] = None
+
         except Exception as e:
             print(e)
             return None
@@ -520,7 +529,6 @@ class googleimagesdownload:
             lang_url = lang + lang_param[arguments['language']]
         else:
             lang_url = ''
-
 
         built_url = "&tbs="
         counter = 0
@@ -884,12 +892,12 @@ class googleimagesdownload:
             if len(image_objects) == 0:
                 print("no_links")
                 break
-            #code added here to attempt to implement offset correctly
-            #was "count < int(arguments['offset'])" in hardikvasa code, this seems
+            # code added here to attempt to implement offset correctly
+            # was "count < int(arguments['offset'])" in hardikvasa code, this seems
             # to be contrary to the implementation details. 
             elif arguments['offset'] and count <= int(arguments['offset']):
-                    count += 1
-                    #page = page[end_content:]
+                count += 1
+                # page = page[end_content:]
             else:
                 # format the item for readability
                 object = self.format_object(image_objects[i])
@@ -1074,7 +1082,7 @@ class googleimagesdownload:
                 i = 0
                 while i < len(search_keyword):  # 3.for every main keyword
                     iteration = "\n" + "Item no.: " + str(i + 1) + " -->" + " Item name = " + (pky) + (
-                    search_keyword[i]) + (sky)
+                        search_keyword[i]) + (sky)
                     if not arguments["silent_mode"]:
                         print(iteration.encode('raw_unicode_escape').decode('utf-8'))
                         print("Evaluating...")
@@ -1133,7 +1141,8 @@ class googleimagesdownload:
                             if limit < 101:
                                 images, _ = self.download_page(value)  # download page
                             else:
-                                images, _ = self.download_extended_page(value, arguments['chromedriver'], arguments['browser'])
+                                images, _ = self.download_extended_page(value, arguments['chromedriver'],
+                                                                        arguments['browser'])
                             self.create_directories(main_directory, final_search_term, arguments['thumbnail'],
                                                     arguments['thumbnail_only'])
                             self._get_all_items(images, main_directory, search_term + " - " + key, limit, arguments)
